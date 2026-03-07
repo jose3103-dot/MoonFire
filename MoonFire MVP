@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moonfire | Skull Mountain Official</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #09090b; color: #fafafa; font-family: ui-monospace, monospace; }
+        .glow-orange { text-shadow: 0 0 15px rgba(234, 88, 12, 0.5); }
+    </style>
+</head>
+<body class="flex flex-col items-center min-h-screen p-6">
+
+    <header class="text-center my-10">
+        <h1 class="text-5xl font-black italic tracking-tighter text-orange-600 glow-orange uppercase">Moonfire</h1>
+        <p class="text-[10px] text-zinc-500 uppercase tracking-[0.4em] mt-2 font-bold">The Skull Mountain Protocol</p>
+    </header>
+
+    <main class="w-full max-w-md space-y-6">
+        <section class="border border-zinc-800 bg-zinc-900/40 p-6 rounded-2xl">
+            <h2 class="text-xs font-bold mb-4 text-orange-200 uppercase tracking-widest border-b border-zinc-800 pb-2">01 // Root Trainer Logic</h2>
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <button onclick="alert('Taproot Selected')" class="p-3 border border-zinc-700 rounded-lg text-[10px] font-bold hover:border-orange-500 transition">TAPROOT PATH</button>
+                <button onclick="alert('Helix Selected')" class="p-3 border border-orange-600 bg-orange-600/5 rounded-lg text-[10px] font-bold text-orange-500">HELIX SPIRAL</button>o
+            </div>
+            <p class="text-[9px] text-zinc-500 italic text-center">Custom-engineered 3D paths for living art.</p>
+        </section>
+
+        <section class="border border-zinc-800 bg-zinc-900/40 p-6 rounded-2xl">
+            <h2 class="text-xs font-bold mb-2 text-orange-200 uppercase tracking-widest">02 // DIY Succulent Party Kit</h2>
+            <p class="text-[10px] text-zinc-500 mb-4">The $75+ premium experience for events.</p>
+            <button onclick="alert('Batch Queue Joined')" class="w-full py-3 bg-zinc-800 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-zinc-700 hover:border-orange-500">Reserve Batch #001</button>
+        </section>
+
+        <div class="pt-4">
+            <label class="text-[10px] uppercase text-zinc-600 font-bold mb-2 block tracking-widest text-center">Deployment Email</label>
+            <input type="email" placeholder="COMMANDER@SKULLMOUNTAIN.COM" 
+                   class="w-full bg-black border border-zinc-800 p-4 rounded-xl text-orange-500 outline-none focus:border-orange-600 text-xs font-bold mb-3 text-center uppercase">
+            <button onclick="alert('Order Logged')" class="w-full bg-orange-600 text-black font-black py-5 rounded-xl uppercase tracking-tighter text-lg shadow-lg shadow-orange-900/20 active:scale-95 transition-transform">
+                Initialize Production
+            </button>
+        </div>
+    </main>
+
+    <footer class="mt-auto py-10 text-[9px] text-zinc-700 uppercase tracking-widest">
+        &copy; 2026 Skull Mountain Functional Art
+    </footer>
+</body>
+</html>
