@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Meet Fatso | Skeletons in the Closet</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #09090b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: ui-monospace, 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        /* ── Phone / reel container ── */
+        .reel {
+            position: relative;
+            width: 390px;
+            height: 760px;
+            background: #000;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px rgba(249,115,22,0.15),
+                0 0 60px rgba(249,115,22,0.08),
+                0 32px 80px rgba(0,0,0,0.8);
+        }
+
+        /* ── Background cartoon image ── */
+        .scene-bg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 62%;
+            object-fit: cover;
+            object-position: center top;
+            display: block;
+        }
+
+        /* ── Gradient blend from image into dark bottom ── */
+        .gradient-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.10) 0%,
+                rgba(0,0,0,0.10) 40%,
+                rgba(0,0,0,0.55) 55%,
+                rgba(9,9,11,0.92) 70%,
+                #09090b 84%
+            );
+            pointer-events: none;
+        }
+
+        /* ── Progress segments ── */
+        .progress-bar {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            right: 14px;
+            display: flex;
+            gap: 4px;
+            z-index: 30;
+        }
+        .seg {
+            flex: 1;
+            height: 3px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.18);
+            overflow: hidden;
+        }
+        .seg-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: #f97316;
+            width: 0%;
+            transition: none;
+        }
+
+        /* ── Episode label (top-left) ── */
+        .ep-label {
+            position: absolute;
+            top: 28px;
+            left: 14px;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            z-index: 30;
+        }
+
+        /* ── Skull Mountain logo (top-right) ── */
+        .brand {
+            position: absolute;
+            top: 24px;
+            right: 14px;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            color: #f97316;
+            text-transform: uppercase;
+            z-index: 30;
+            text-shadow: 0 0 12px rgba(249,115,22,0.5);
+        }
+
+        /* ── Dialog area ── */
+        .dialog-area {
+            position: absolute;
+            bottom: 80px;
+            left: 18px;
+            right: 18px;
+            z-index: 20;
+        }
+
+        .char-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 14px 5px 10px;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            margin-bottom: 9px;
+            opacity: 0;
+            transform: translateX(-14px);
+            transition: opacity 0.28s ease, transform 0.28s ease;
+            border: 1px solid transparent;
+        }
+        .char-chip.on {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .action-line {
+            font-size: 10px;
+            color: rgba(255,255,255,0.38);
+            font-style: italic;
+            margin-bottom: 7px;
+            opacity: 0;
+            transition: opacity 0.35s ease 0.15s;
+            line-height: 1.4;
+        }
+        .action-line.on { opacity: 1; }
+
+        .dialog-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.38;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+            min-height: 58px;
+            letter-spacing: -0.01em;
+        }
+
+        /* blinking cursor */
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 0.85em;
+            vertical-align: text-bottom;
+            margin-left: 1px;
+            animation: blink 0.65s steps(1) infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+        /* ── TikTok chrome (bottom bar) ── */
+        .tiktok-bar {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 76px;
+            background: rgba(0,0,0,0.82);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 10px;
+            z-index: 20;
+        }
+        .tiktok-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+        }
+        .tiktok-btn span:first-child { font-size: 22px; }
+        .tiktok-btn span:last-child {
+            font-size: 8px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.05em;
+        }
+
+        /* ── Title card ── */
+        .title-card {
+            position: absolute;
+            inset: 0;
+            background: #09090b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            z-index: 50;
+            transition: opacity 0.8s ease;
+        }
+        .title-card.fade-out { opacity: 0; pointer-events: none; }
+        .title-divider {
+            width: 160px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #f97316, transparent);
+            margin: 14px 0;
+        }
+
+        /* ── Gear card ── */
+        .gear-card {
+            position: absolute;
+            inset: 0;
+            background: #09090b;
+            display: flex;
+            flex-direction: column;
+            padding: 36px 22px 80px;
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+        }
+        .gear-card.on { opacity: 1; pointer-events: auto; }
+        .gear-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            opacity: 0;
+            transform: translateX(-12px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .gear-item.on { opacity: 1; transform: translateX(0); }
+
+        /* ── Fatso Fact end card ── */
+        .fact-card {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 60%, #1c0a00 0%, #09090b 70%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 36px 28px;
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+        }
+        .fact-card.on { opacity: 1; pointer-events: auto; }
+
+        /* ── Dirt particles ── */
+        .dirt {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: dirt-fly 0.9s ease-out forwards;
+            z-index: 25;
+        }
+        @keyframes dirt-fly {
+            from { opacity: 1; transform: translate(0,0) scale(1); }
+            to   { opacity: 0; transform: translate(var(--tx),var(--ty)) scale(0.2); }
+        }
+
+        /* ── Scene shake ── */
+        @keyframes shake {
+            0%,100%{transform:translateX(0)}
+            20%{transform:translateX(-3px)}
+            40%{transform:translateX(3px)}
+            60%{transform:translateX(-2px)}
+            80%{transform:translateX(2px)}
+        }
+        .shake { animation: shake 0.35s ease; }
+
+        /* ── Bounce dots (title card) ── */
+        @keyframes bounce-dot {
+            0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)}
+        }
+
+        /* ── Controls below phone ── */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .ctrl-btn {
+            padding: 9px 22px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .ctrl-btn:active { opacity: 0.75; }
+        .ctrl-btn.primary { background: #f97316; color: #000; }
+        .ctrl-btn.secondary { background: #27272a; color: #fff; }
+
+        /* ── Mute button ── */
+        .mute-btn {
+            position: absolute;
+            top: 50px;
+            right: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="reel" id="reel">
+
+    <!-- Background image -->
+    <img src="./assets/fatso-cartoon.png" class="scene-bg" id="sceneBg" alt="">
+
+    <!-- Gradient overlay -->
+    <div class="gradient-overlay"></div>
+
+    <!-- Progress bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Labels -->
+    <div class="ep-label">💀 Skull Mountain</div>
+    <div class="brand">SkeletonsTv</div>
+
+    <!-- Mute toggle -->
+    <button class="mute-btn" id="muteBtn" onclick="toggleMute()" title="Toggle voice">🔊</button>
+
+    <!-- Dialog area -->
+    <div class="dialog-area" id="dialogArea">
+        <div class="char-chip" id="charChip"></div>
+        <div class="action-line" id="actionLine"></div>
+        <div class="dialog-text" id="dialogText"></div>
+    </div>
+
+    <!-- TikTok chrome -->
+    <div class="tiktok-bar">
+        <div class="tiktok-btn"><span>❤️</span><span>24.1K</span></div>
+        <div class="tiktok-btn"><span>💬</span><span>1,847</span></div>
+        <div class="tiktok-btn"><span>🔖</span><span>8,902</span></div>
+        <div class="tiktok-btn"><span>↗️</span><span>Share</span></div>
+    </div>
+
+    <!-- ── TITLE CARD ── -->
+    <div class="title-card" id="titleCard">
+        <p style="font-size:9px;letter-spacing:0.3em;color:#52525b;text-transform:uppercase;margin-bottom:10px">💀 Skull Mountain Presents</p>
+        <h1 style="font-size:30px;font-weight:900;color:#f97316;text-align:center;line-height:1.05;text-transform:uppercase;letter-spacing:-0.02em;text-shadow:0 0 30px rgba(249,115,22,0.45)">
+            Skeletons<br>in the Closet
+        </h1>
+        <div class="title-divider"></div>
+        <p style="font-size:13px;color:#e4e4e7;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">Meet Fatso</p>
+        <p style="font-size:10px;color:#71717a;margin-top:5px;font-style:italic">The Professional Soil Rooter</p>
+        <div style="display:flex;align-items:center;gap:9px;margin-top:22px">
+            <span style="font-size:26px">🐾</span>
+            <div style="display:flex;gap:4px">
+                <div style="width:5px;height:5px;background:#92400e;border-radius:50%;animation:bounce-dot 0.55s ease 0s infinite"></div>
+                <div style="width:5px;height:5px;background:#a16207;border-radius:50%;animation:bounce-dot 0.55s ease 0.1s infinite"></div>
+                <div style="width:5px;height:5px;background:#78350f;border-radius:50%;animation:bounce-dot 0.55s ease 0.2s infinite"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── GEAR CARD ── -->
+    <div class="gear-card" id="gearCard">
+        <p style="font-size:9px;letter-spacing:0.28em;color:#f97316;text-transform:uppercase;margin-bottom:6px;font-weight:900">🔧 Fatso's Official Gear</p>
+        <p style="font-size:13px;font-weight:900;color:#fafafa;margin-bottom:20px;text-transform:uppercase;letter-spacing:0.05em">Built by Randy Rattle</p>
+        <div id="gearList" style="display:flex;flex-direction:column;gap:14px;flex:1"></div>
+    </div>
+
+    <!-- ── FATSO FACT CARD ── -->
+    <div class="fact-card" id="factCard">
+        <div style="text-align:center">
+            <p style="font-size:38px;margin-bottom:14px">🐾</p>
+            <p style="font-size:9px;letter-spacing:0.28em;color:#d97706;text-transform:uppercase;margin-bottom:14px;font-weight:900">Fatso Fact</p>
+            <p style="font-size:17px;color:#fafafa;font-weight:700;line-height:1.5;font-style:italic">
+                "She rarely understands<br>why anyone else is concerned.<br><br>She just follows the dirt."
+            </p>
+            <div style="margin:22px 0;height:1px;background:linear-gradient(to right,transparent,#d97706,transparent)"></div>
+            <p style="font-size:15px;font-weight:900;color:#f97316;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Skeletons in the Closet</p>
+            <p style="font-size:9px;color:#52525b;letter-spacing:0.2em;text-transform:uppercase">Skull Mountain</p>
+            <button onclick="restart()" class="ctrl-btn primary" style="margin-top:22px;display:inline-block">▶ Watch Again</button>
+        </div>
+    </div>
+
+</div><!-- /reel -->
+
+<!-- Controls -->
+<div class="controls">
+    <button id="playBtn" class="ctrl-btn primary" onclick="togglePlay()">▶ Play</button>
+    <button class="ctrl-btn secondary" onclick="restart()">↺ Restart</button>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────
+   SCENE DATA
+   ───────────────────────────────────────────────── */
+const scenes = [
+    {
+        char:   'RANDY',
+        color:  '#fb923c',
+        bg:     'rgba(67,20,7,0.85)',
+        border: 'rgba(249,115,22,0.35)',
+        icon:   '💀',
+        dialog: "Maggie, I have someone new to introduce to the crew.",
+        action: "gestures grandly toward the work area behind him",
+        ms:     4200,
+        voice:  { rate: 1.05, pitch: 1.18 }
+    },
+    {
+        char:   'MAGGIE',
+        color:  '#c084fc',
+        bg:     'rgba(46,16,101,0.85)',
+        border: 'rgba(168,85,247,0.35)',
+        icon:   '💀',
+        dialog: "Oh? Another experiment? A new gadget? Or... is it a plant this time?",
+        action: "tilts her head, curious and amused, leaning forward",
+        ms:     5000,
+        voice:  { rate: 0.94, pitch: 1.12 }
+    },
+    {
+        char:   'RANDY',
+        color:  '#fb923c',
+        bg:     'rgba(67,20,7,0.85)',
+        border: 'rgba(249,115,22,0.35)',
+        icon:   '💀',
+        dialog: "Better. Furrier. Louder. Dirtier.",
+        action: "grins ear to ear, clearly very proud of himself",
+        ms:     3400,
+        voice:  { rate: 0.88, pitch: 1.18 }
+    },
+    {
+        char:   'RANDY',
+        color:  '#fb923c',
+        bg:     'rgba(67,20,7,0.85)',
+        border: 'rgba(249,115,22,0.35)',
+        icon:   '💀',
+        dialog: "Say hello to Fatso— A.K.A. Izzy. The Professional Soil Rooter.",
+        action: "sweeps arm wide as Fatso rolls into view in her custom-built soil tiller",
+        ms:     4800,
+        voice:  { rate: 1.0, pitch: 1.18 }
+    },
+    {
+        char:   'MAGGIE',
+        color:  '#c084fc',
+        bg:     'rgba(46,16,101,0.85)',
+        border: 'rgba(168,85,247,0.35)',
+        icon:   '💀',
+        dialog: "Well... that is disturbingly perfect.",
+        action: "blinks, then smiles — expression softens with impressed approval",
+        ms:     4000,
+        voice:  { rate: 0.88, pitch: 1.12 }
+    },
+    {
+        char:   'RANDY',
+        color:  '#fb923c',
+        bg:     'rgba(67,20,7,0.85)',
+        border: 'rgba(249,115,22,0.35)',
+        icon:   '💀',
+        dialog: "I outfitted her with the finest garden tech I could build.",
+        action: "points at gadgets with excitement, still bouncing with inventor energy",
+        ms:     4200,
+        voice:  { rate: 1.05, pitch: 1.18 }
+    },
+    {
+        char:   'MAGGIE',
+        color:  '#c084fc',
+        bg:     'rgba(46,16,101,0.85)',
+        border: 'rgba(168,85,247,0.35)',
+        icon:   '💀',
+        dialog: "Randy... those are incredible.",
+        action: "runs a careful eye over the machine, noting every detail",
+        ms:     3600,
+        voice:  { rate: 0.9, pitch: 1.12 }
+    },
+    {
+        char:   'RANDY',
+        color:  '#fb923c',
+        bg:     'rgba(67,20,7,0.85)',
+        border: 'rgba(249,115,22,0.35)',
+        icon:   '💀',
+        dialog: "The world's first canine-powered, nose-guided, dirt-detecting, tine-tilling marvel.",
+        action: "spins a small gear on the tiller — it whirs proudly",
+        ms:     5800,
+        voice:  { rate: 1.0, pitch: 1.18 }
+    },
+    {
+        char:   'FATSO (IZZY)',
+        color:  '#fbbf24',
+        bg:     'rgba(69,26,3,0.88)',
+        border: 'rgba(217,119,6,0.4)',
+        icon:   '🐾',
+        dialog: "I smell adventure... and snacks.",
+        action: "sniffs air, sneezes soil — dirt flies from the tines. Very pleased with herself.",
+        ms:     4000,
+        voice:  { rate: 0.82, pitch: 0.75 },
+        special: 'dirt'
+    },
+    {
+        char:   'MAGGIE',
+        color:  '#c084fc',
+        bg:     'rgba(46,16,101,0.85)',
+        border: 'rgba(168,85,247,0.35)',
+        icon:   '💀',
+        dialog: "Of course you do.",
+        action: "shakes her head, smiling — she already knows this is going to be a ride",
+        ms:     3500,
+        voice:  { rate: 0.85, pitch: 1.12 }
+    }
+];
+
+const gear = [
+    { icon: '👃', name: 'NOSE GRUBBER 3000',  desc: 'High-sensitivity soil sniffer. Detects roots, voles, snacks, and trouble.' },
+    { icon: '📡', name: 'DIRT DETECTOR',       desc: 'Alerts Fatso when soil is loose, compacted, or suspicious.' },
+    { icon: '🐿️', name: 'SQUIRREL SENSOR',     desc: 'Tracks underground squirrel tunnels. (Not that she needs the help.)' },
+    { icon: '⚙️', name: 'TINE TURBO TILLER',   desc: 'Six rotating tines for maximum root agitation and aeration.' },
+    { icon: '🦴', name: 'TREAT DISPENSER',      desc: 'Positive reinforcement module. May backfire. (Prototype)' }
+];
+
+/* ─────────────────────────────────────────────────
+   STATE
+   ───────────────────────────────────────────────── */
+let scene        = -1;
+let playing      = false;
+let muted        = false;
+let sceneTimer   = null;
+let progTimer    = null;
+let progStart    = 0;
+let typeTimer    = null;
+let cursorEl     = null;
+
+/* ─────────────────────────────────────────────────
+   BUILD STATIC ELEMENTS
+   ───────────────────────────────────────────────── */
+const $progressBar = document.getElementById('progressBar');
+scenes.forEach((_, i) => {
+    const seg = document.createElement('div');
+    seg.className = 'seg';
+    seg.id = 'seg' + i;
+    seg.innerHTML = `<div class="seg-fill" id="fill${i}"></div>`;
+    $progressBar.appendChild(seg);
+});
+
+const $gearList = document.getElementById('gearList');
+gear.forEach((g, i) => {
+    const el = document.createElement('div');
+    el.className = 'gear-item';
+    el.id = 'gi' + i;
+    el.innerHTML = `
+        <span style="font-size:22px;flex-shrink:0;margin-top:1px">${g.icon}</span>
+        <div>
+            <p style="font-size:9px;font-weight:900;color:#fb923c;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:3px">${g.name}</p>
+            <p style="font-size:11px;color:#a1a1aa;line-height:1.45">${g.desc}</p>
+        </div>`;
+    $gearList.appendChild(el);
+});
+
+/* ─────────────────────────────────────────────────
+   VOICES
+   ───────────────────────────────────────────────── */
+let voices = [];
+function loadVoices() {
+    voices = speechSynthesis.getVoices();
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function pickVoice(char) {
+    if (!voices.length) return null;
+    const en = voices.filter(v => v.lang && v.lang.startsWith('en'));
+    if (char === 'FATSO (IZZY)') {
+        return en.find(v => /daniel|alex|fred|bruce/i.test(v.name))
+            || en.find(v => /male/i.test(v.name))
+            || en[0] || null;
+    }
+    if (char === 'MAGGIE') {
+        return en.find(v => /samantha|karen|fiona|victoria|zira|hazel/i.test(v.name))
+            || en.find(v => /female/i.test(v.name))
+            || en[1] || null;
+    }
+    // Randy — energetic male
+    return en.find(v => /alex|tom|ryan|james|oliver/i.test(v.name))
+        || en[0] || null;
+}
+
+function speak(text, s) {
+    if (muted || !('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate   = s.voice.rate;
+    u.pitch  = s.voice.pitch;
+    u.volume = 0.85;
+    const v  = pickVoice(s.char);
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+}
+
+/* ─────────────────────────────────────────────────
+   TYPEWRITER
+   ───────────────────────────────────────────────── */
+function typeText(text, el, color) {
+    clearInterval(typeTimer);
+    el.textContent = '';
+    cursorEl = document.createElement('span');
+    cursorEl.className = 'cursor';
+    cursorEl.style.background = color;
+    el.appendChild(cursorEl);
+
+    let i = 0;
+    const charDelay = Math.max(18, Math.min(48, Math.round(1200 / text.length)));
+    typeTimer = setInterval(() => {
+        if (i < text.length) {
+            el.insertBefore(document.createTextNode(text[i++]), cursorEl);
+        } else {
+            clearInterval(typeTimer);
+            setTimeout(() => { if (cursorEl) cursorEl.remove(); }, 600);
+        }
+    }, charDelay);
+}
+
+/* ─────────────────────────────────────────────────
+   PROGRESS FILL
+   ───────────────────────────────────────────────── */
+function startProgress(index, duration) {
+    clearInterval(progTimer);
+    progStart = Date.now();
+    const fill = document.getElementById('fill' + index);
+    fill.style.width = '0%';
+    progTimer = setInterval(() => {
+        const pct = Math.min(100, ((Date.now() - progStart) / duration) * 100);
+        fill.style.width = pct + '%';
+        if (pct >= 100) clearInterval(progTimer);
+    }, 40);
+}
+
+/* ─────────────────────────────────────────────────
+   DIRT PARTICLES
+   ───────────────────────────────────────────────── */
+function spawnDirt() {
+    const reel = document.getElementById('reel');
+    reel.classList.add('shake');
+    setTimeout(() => reel.classList.remove('shake'), 400);
+    for (let i = 0; i < 14; i++) {
+        const p = document.createElement('div');
+        p.className = 'dirt';
+        const cx = 130 + Math.random() * 170;
+        const cy = 300 + Math.random() * 80;
+        p.style.left = cx + 'px';
+        p.style.top  = cy + 'px';
+        p.style.setProperty('--tx', (Math.random() * 80 - 40) + 'px');
+        p.style.setProperty('--ty', (-Math.random() * 100 - 20) + 'px');
+        p.style.background = ['#92400e','#78350f','#a16207','#854d0e','#6b2d0e'][Math.floor(Math.random()*5)];
+        reel.appendChild(p);
+        setTimeout(() => p.remove(), 950);
+    }
+}
+
+/* ─────────────────────────────────────────────────
+   SCENE RUNNER
+   ───────────────────────────────────────────────── */
+function playScene(idx) {
+    if (!playing) return;
+    if (idx >= scenes.length) { showGear(); return; }
+
+    scene = idx;
+    const s = scenes[idx];
+
+    // Mark previous done
+    if (idx > 0) {
+        const prev = document.getElementById('seg' + (idx - 1));
+        if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+        const pf = document.getElementById('fill' + (idx - 1));
+        if (pf) pf.style.width = '100%';
+    }
+    const segEl = document.getElementById('seg' + idx);
+    if (segEl) segEl.classList.add('active');
+
+    startProgress(idx, s.ms);
+
+    // Dialog
+    const chip   = document.getElementById('charChip');
+    const action = document.getElementById('actionLine');
+    const dialog = document.getElementById('dialogText');
+
+    chip.classList.remove('on');
+    action.classList.remove('on');
+    dialog.textContent = '';
+
+    chip.style.background   = s.bg;
+    chip.style.color        = s.color;
+    chip.style.borderColor  = s.border;
+    chip.innerHTML = `<span>${s.icon}</span>${s.char}`;
+
+    action.textContent = '(' + s.action + ')';
+
+    setTimeout(() => {
+        chip.classList.add('on');
+        action.classList.add('on');
+        typeText(s.dialog, dialog, s.color);
+    }, 200);
+
+    speak(s.dialog, s);
+
+    if (s.special === 'dirt') setTimeout(spawnDirt, 400);
+
+    clearTimeout(sceneTimer);
+    sceneTimer = setTimeout(() => playScene(idx + 1), s.ms);
+}
+
+/* ─────────────────────────────────────────────────
+   GEAR REVEAL
+   ───────────────────────────────────────────────── */
+function showGear() {
+    clearInterval(progTimer);
+    // Complete last segment
+    const lf = document.getElementById('fill' + (scenes.length - 1));
+    if (lf) lf.style.width = '100%';
+    const ls = document.getElementById('seg' + (scenes.length - 1));
+    if (ls) { ls.classList.remove('active'); ls.classList.add('done'); }
+
+    document.getElementById('gearCard').classList.add('on');
+
+    gear.forEach((_, i) => {
+        setTimeout(() => {
+            const gi = document.getElementById('gi' + i);
+            if (gi) gi.classList.add('on');
+        }, 350 + i * 220);
+    });
+
+    setTimeout(showFact, 3800 + gear.length * 220);
+}
+
+/* ─────────────────────────────────────────────────
+   FATSO FACT
+   ───────────────────────────────────────────────── */
+function showFact() {
+    document.getElementById('gearCard').classList.remove('on');
+    document.getElementById('factCard').classList.add('on');
+    playing = false;
+    document.getElementById('playBtn').textContent = '▶ Play';
+}
+
+/* ─────────────────────────────────────────────────
+   CONTROLS
+   ───────────────────────────────────────────────── */
+function togglePlay() {
+    if (playing) {
+        playing = false;
+        clearTimeout(sceneTimer);
+        clearInterval(progTimer);
+        clearInterval(typeTimer);
+        speechSynthesis.cancel?.();
+        document.getElementById('playBtn').textContent = '▶ Play';
+    } else {
+        if (scene < 0 || scene >= scenes.length) {
+            restart();
+        } else {
+            playing = true;
+            document.getElementById('playBtn').textContent = '⏸ Pause';
+            playScene(scene);
+        }
+    }
+}
+
+function restart() {
+    playing = false;
+    scene   = -1;
+    clearTimeout(sceneTimer);
+    clearInterval(progTimer);
+    clearInterval(typeTimer);
+    speechSynthesis.cancel?.();
+
+    // Reset progress
+    scenes.forEach((_, i) => {
+        const seg  = document.getElementById('seg' + i);
+        const fill = document.getElementById('fill' + i);
+        if (seg)  { seg.className  = 'seg'; }
+        if (fill) { fill.style.width = '0%'; }
+    });
+
+    // Reset gear items
+    gear.forEach((_, i) => {
+        const gi = document.getElementById('gi' + i);
+        if (gi) gi.classList.remove('on');
+    });
+
+    // Reset cards
+    document.getElementById('gearCard').classList.remove('on');
+    document.getElementById('factCard').classList.remove('on');
+    document.getElementById('charChip').classList.remove('on');
+    document.getElementById('actionLine').classList.remove('on');
+    document.getElementById('dialogText').textContent = '';
+    document.getElementById('playBtn').textContent = '▶ Play';
+
+    // Show title card then auto-start
+    const tc = document.getElementById('titleCard');
+    tc.classList.remove('fade-out');
+    Object.assign(tc.style, { opacity: '1', pointerEvents: 'auto' });
+
+    setTimeout(() => {
+        tc.classList.add('fade-out');
+        setTimeout(() => {
+            playing = true;
+            scene = 0;
+            document.getElementById('playBtn').textContent = '⏸ Pause';
+            playScene(0);
+        }, 900);
+    }, 2400);
+}
+
+function toggleMute() {
+    muted = !muted;
+    document.getElementById('muteBtn').textContent = muted ? '🔇' : '🔊';
+    if (muted) speechSynthesis.cancel?.();
+}
+
+/* ─────────────────────────────────────────────────
+   AUTO-START
+   ───────────────────────────────────────────────── */
+window.addEventListener('load', () => {
+    loadVoices();
+    restart();
+});
+</script>
+</body>
+</html>
